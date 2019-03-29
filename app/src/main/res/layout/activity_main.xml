@@ -16,7 +16,7 @@
                 android:id="@+id/tv_label_pokemon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pokemon Type" />
+                android:text="Pokemon Type - Ricardo Gomez #00108517" />
 
         <EditText
                 android:id="@+id/et_pokemon_number"
