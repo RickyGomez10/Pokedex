@@ -9,6 +9,7 @@ import android.widget.TextView
 import com.example.pokedex3.models.Pokemon
 
 import kotlinx.android.synthetic.main.item_pokemons.view.*
+import java.io.Serializable
 
 class PokemonAdapter(val items: List<Pokemon>, var clickListener: ClickListener) : RecyclerView.Adapter<PokemonAdapter.ViewHolder>() {
 

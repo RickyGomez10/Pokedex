@@ -1,14 +1,17 @@
 package com.example.pokedex3
 
 import android.content.Intent
+import android.net.Uri
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import android.widget.*
+import com.example.pokedex3.Interfaces.IComunicaFragments
 import com.example.pokedex3.models.Pokemon
 import com.example.pokedex3.utils.NetworkUtils
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,7 +27,16 @@ import java.io.IOException
 
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ListaPokemonFragment.OnFragmentInteractionListener, DetallePokemonFragment.OnFragmentInteractionListener,
+    IComunicaFragments {
+
+    var listaFragment = ListaPokemonFragment()
+    var detalleFragment = DetallePokemonFragment()
+
+    override fun onFragmentInteraction(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
@@ -37,16 +49,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        bindView()
+        if(findViewById<LinearLayout>(R.id.ContenedorFragments) != null){
+            if(savedInstanceState != null){
 
-        mSearchButton!!.setOnClickListener { view ->
-            val pokemonNumber = mPokemonNumber!!.text.toString().toLowerCase().trim { it <= ' ' }
-            if (pokemonNumber.isEmpty()) {
-                mResultText!!.setText(R.string.text_nothing_to_show)
-            } else {
 
-                FetchPokemonTask().execute(pokemonNumber)
             }
+            supportFragmentManager.beginTransaction().replace(R.id.ContenedorFragments, listaFragment).commit()
+
+        }else{
+            supportFragmentManager.beginTransaction().add(R.id.fl_lista, listaFragment).commit();
+
         }
     }
 
@@ -54,78 +66,37 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
-    fun initRecycler(lista: List<String>) {
-        var pokemon: MutableList<Pokemon> = MutableList(lista.size) {i ->
-            Pokemon(i,lista.get(i),"type:" +et_pokemon_number.text.toString())
-        }
+    override fun enviarPokemon(nombre : String){
+        val bundlenvio = Bundle()
+        bundlenvio.putSerializable("objeto",nombre);
+        detalleFragment.arguments = bundlenvio
+        val fragmento : Fragment? = supportFragmentManager.findFragmentById(R.id.fl_detalle);
+        if(findViewById<LinearLayout>(R.id.ContenedorFragments) == null){
 
-        viewManager = LinearLayoutManager(this)
-        viewAdapter = PokemonAdapter(pokemon, object :ClickListener{
-            override fun onClick(vista: View, position: Int) {
-                val intent = Intent(this@MainActivity, MostrarPokemon::class.java)
-                intent.putExtra("Nombre", lista.get(position))
-                startActivity(intent);
+            if(fragmento is DetallePokemonFragment) {
+                val fragmento2: Fragment? = supportFragmentManager.findFragmentByTag("fragdetalle")
+                supportFragmentManager.beginTransaction().remove(fragmento2!!).commit()
+
             }
+                supportFragmentManager.beginTransaction().add(R.id.fl_detalle, detalleFragment, "fragdetalle").addToBackStack(null).commitAllowingStateLoss();
 
-        })
+            Log.i("Aja:","Aja")
 
-        rv_pokemons.apply {
-            setHasFixedSize(true)
-            layoutManager = viewManager
-            adapter = viewAdapter
+        }else{
+            val bundlenvio = Bundle()
+            bundlenvio.putSerializable("objeto",nombre);
+            detalleFragment.arguments = bundlenvio
+
+            supportFragmentManager.beginTransaction().replace(R.id.ContenedorFragments, detalleFragment).addToBackStack(null).commit()
+
+
         }
+
+
+
+
 
     }
 
-    internal fun bindView() {
-        mPokemonNumber = findViewById(R.id.et_pokemon_number)
-        mSearchButton = findViewById(R.id.bt_search_pokemon)
-        mResultText = findViewById(R.id.tv_result)
-
-    }
-
-
-    private inner class FetchPokemonTask : AsyncTask<String, Void, String>() {
-
-        override fun doInBackground(vararg pokemonNumbers: String): String? {
-
-            if (pokemonNumbers.size == 0) {
-                return null
-            }
-
-            val ID = pokemonNumbers[0]
-
-            val pokeAPI = NetworkUtils.buildUrl(ID, "type")
-            try {
-                return NetworkUtils.getResponseFromHttpUrl(pokeAPI!!)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return ""
-            }
-
-        }
-
-        override fun onPostExecute(pokemonInfo: String?) {
-            if (pokemonInfo != null && pokemonInfo != "") {
-               var jsonPokemon = JSONObject(pokemonInfo)
-                var pokeArray = jsonPokemon.getJSONArray("pokemon");
-                var ListaPokemons = mutableListOf<String>()
-                for (it in 0 until pokeArray.length()) {
-                    var pokemon = pokeArray.optJSONObject(it).getJSONObject("pokemon");
-                    var nombrePokemon = pokemon.getString("name");
-
-                   ListaPokemons.add(it,nombrePokemon)
-                }
-                initRecycler(ListaPokemons)
-
-
-
-            } else {
-                var ListaPokemons = mutableListOf<String>()
-                initRecycler(ListaPokemons)
-                mResultText!!.setText(R.string.text_nothing_to_show)
-            }
-        }
-    }
 }
 
