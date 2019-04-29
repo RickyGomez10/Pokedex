@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity(), ListaPokemonFragment.OnFragmentInterac
             supportFragmentManager.beginTransaction().replace(R.id.ContenedorFragments, listaFragment).commit()
 
         }else{
+
             supportFragmentManager.beginTransaction().add(R.id.fl_lista, listaFragment).commit();
 
         }

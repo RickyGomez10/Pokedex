@@ -81,6 +81,7 @@ class ListaPokemonFragment : Fragment() {
         mPokemonNumber = vista?.findViewById(R.id.et_pokemon_number)
         mSearchButton = vista?.findViewById(R.id.bt_search_pokemon)
         mResultText = vista?.findViewById(R.id.tv_result) as TextView
+        mPokemonNumber?.text?.clear()
 
 
         mSearchButton!!.setOnClickListener { view ->
@@ -90,6 +91,7 @@ class ListaPokemonFragment : Fragment() {
             } else {
 
                 FetchPokemonTask().execute(pokemonNumber)
+                mPokemonNumber?.text?.clear()
             }
         }
 
